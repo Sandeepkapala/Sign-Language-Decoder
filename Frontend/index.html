@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Language Decoder</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+<div class="container">
+    <div class="left-panel">
+        <div class="app-title">Sign Language Decoder</div>
+        <div class="description">
+            Real-time sign language recognition using AI-powered gesture detection.
+            Click Start to activate your camera and begin decoding.
+        </div>
+
+        <div class="camera-box">
+            <video id="video" autoplay muted></video>
+        </div>
+
+        <div class="buttons">
+            <button class="start-btn" onclick="startCamera()">Start</button>
+            <button class="stop-btn" onclick="stopCamera()">Stop</button>
+            <button class="predict-btn" onclick="predictCurrentFrame()">Predict</button>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="prediction-card">
+            <div class="prediction-label">Detected Gesture</div>
+            <div class="prediction-text" id="prediction">--</div>
+        </div>
+    </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
