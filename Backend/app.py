@@ -19,10 +19,10 @@ hands_model = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.
 
 def load_resources():
     global model, data_dict, max_len
-    model_dict = pickle.load(open('../model.p', 'rb'))
+    model_dict = pickle.load(open('model.p', 'rb'))
     model = model_dict['model']
     
-    data_dict = pickle.load(open('../data.pickle', 'rb'))
+    data_dict = pickle.load(open('data.pickle', 'rb'))
     data = np.array(data_dict['data'], dtype=object)
     max_len = max(len(i) for i in data)
     print(f"Model loaded. Max len: {max_len}")
