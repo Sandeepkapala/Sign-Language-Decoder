@@ -1,4 +1,48 @@
+// Text-to-Speech
+let speechEnabled = true;
+let lastSpokenPrediction = '';
+let speechCooldown = false;
 
+function speakPrediction(text = null) {
+    let textToSpeak = text || prediction.textContent;
+
+    // Remove confidence percentage
+    textToSpeak = textToSpeak.replace(/\s*\([^)]*\)/g, '').trim();
+
+    // Don't speak invalid results
+    if (
+        !textToSpeak ||
+        textToSpeak === '--' ||
+        textToSpeak === '?' ||
+        textToSpeak === 'No hand' ||
+        textToSpeak === 'Camera error'
+    ) {
+        return;
+    }
+
+    // Prevent speaking the same prediction continuously
+    if (textToSpeak === lastSpokenPrediction && speechCooldown) {
+        return;
+    }
+
+    lastSpokenPrediction = textToSpeak;
+    speechCooldown = true;
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    window.speechSynthesis.speak(utterance);
+
+    // Allow the same sign to be spoken again after 2 seconds
+    setTimeout(() => {
+        speechCooldown = false;
+    }, 2000);
+}
 
 // Real MediaPipe Hands detection
 
@@ -6,6 +50,96 @@ let video = document.getElementById("video");
 let canvas = document.createElement('canvas');
 let ctx = canvas.getContext('2d');
 let prediction = document.getElementById("prediction");
+let savedOutput = document.getElementById("savedOutput");
+
+// Stores the complete detected sentence
+let savedText = "";
+
+// Prevent the same prediction from being added repeatedly
+let lastSavedPrediction = "";
+let lastSavedTime = 0;
+function addToSavedOutput(text) {
+    if (!text) return;
+
+    // Remove confidence percentage if present
+    text = text.replace(/\s*\([^)]*\)/g, '').trim();
+
+    if (
+        text === "?" ||
+        text === "--" ||
+        text === "Show hand" ||
+        text === "Camera error"
+    ) {
+        return;
+    }
+
+    const now = Date.now();
+
+    // Prevent the same sign from being added continuously
+    // while the hand is held in the same position.
+    if (
+        text === lastSavedPrediction &&
+        now - lastSavedTime < 1500
+    ) {
+        return;
+    }
+
+    lastSavedPrediction = text;
+    lastSavedTime = now;
+
+    savedText += text;
+    savedOutput.textContent = savedText;
+}
+
+
+function addSpace() {
+    // Don't add multiple spaces
+    if (savedText.length === 0) return;
+
+    if (!savedText.endsWith(" ")) {
+        savedText += " ";
+        savedOutput.textContent = savedText;
+    }
+}
+
+
+function backspaceOutput() {
+    if (savedText.length === 0) return;
+
+    savedText = savedText.slice(0, -1);
+    savedOutput.textContent = savedText;
+}
+
+
+function clearOutput() {
+    savedText = "";
+    savedOutput.textContent = "";
+
+    // Reset prediction tracking too
+    lastSavedPrediction = "";
+    lastSavedTime = 0;
+}
+function speakSavedOutput() {
+    // Get exactly what is currently saved
+    const textToSpeak = savedText.trim();
+
+    // Don't speak if empty
+    if (!textToSpeak) {
+        return;
+    }
+
+    // Stop any previous speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    window.speechSynthesis.speak(utterance);
+}
 let stream;
 let hands = null;
 let cameraRaf = null;
@@ -102,6 +236,12 @@ async function predictSign(landmarks) {
         let display = data.prediction || '?';
         if (data.confidence) display += ` (${data.confidence})`;
         prediction.textContent = display;
+        if (data.prediction) {
+            speakPrediction(data.prediction);
+        }
+        if (data.prediction) {
+    addToSavedOutput(data.prediction);
+}
     } catch (e) {
         prediction.textContent = '?';
     }
@@ -128,6 +268,12 @@ async function predictCurrentFrame() {
                 if (data.confidence) display += ` (${data.confidence})`;
                 prediction.textContent = display;
                 lastPrediction = display;
+                if (data.prediction) {
+    speakPrediction(data.prediction);
+}
+if (data.prediction) {
+    addToSavedOutput(data.prediction);
+}
             } catch (e) {
                 prediction.textContent = '? Error';
             }

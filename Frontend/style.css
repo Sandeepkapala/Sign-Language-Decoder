@@ -240,3 +240,85 @@
 .logout-btn:hover {
     background: #ff3742;
 }
+.speak-btn {
+    background: linear-gradient(45deg, #00b09b, #96c93d);
+    color: white;
+}
+
+.speak-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 176, 155, 0.4);
+}
+/* SAVED OUTPUT */
+
+.saved-card {
+    margin-top: 20px;
+}
+
+.saved-text {
+    min-height: 45px;
+    max-height: 120px;
+    overflow-y: auto;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.saved-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.saved-controls button {
+    padding: 10px 8px;
+    font-size: 12px;
+}
+
+.space-btn {
+    background: #00c9a7;
+    color: white;
+}
+
+.backspace-btn {
+    background: #ff9f43;
+    color: white;
+}
+
+.clear-btn {
+    background: #ff4b5c;
+    color: white;
+}
+
+.space-btn:hover,
+.backspace-btn:hover,
+.clear-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+}
+.saved-speak-btn {
+    display: block;
+    margin: 15px auto 10px auto;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: linear-gradient(45deg, #00b09b, #96c93d);
+    color: white;
+
+    font-size: 20px;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.saved-speak-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 176, 155, 0.4);
+}
+
+.saved-speak-btn:active {
+    transform: scale(0.95);
+}

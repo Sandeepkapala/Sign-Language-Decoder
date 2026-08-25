@@ -26,6 +26,7 @@
             <button class="start-btn" onclick="startCamera()">Start</button>
             <button class="stop-btn" onclick="stopCamera()">Stop</button>
             <button class="predict-btn" onclick="predictCurrentFrame()">Predict</button>
+             <button class="speak-btn" onclick="speakPrediction()">🔊 Speak</button>
         </div>
     </div>
 
@@ -33,6 +34,19 @@
         <div class="prediction-card">
             <div class="prediction-label">Detected Gesture</div>
             <div class="prediction-text" id="prediction">--</div>
+        </div>
+          <!-- Saved Output -->
+    <div class="prediction-card saved-card">
+        <div class="prediction-label">Saved Output</div>
+        <div class="prediction-text saved-text" id="savedOutput"></div>
+         <!-- Speak Saved Output -->
+    <button class="saved-speak-btn" onclick="speakSavedOutput()">
+        🔊
+    </button>
+        <div class="saved-controls">
+            <button class="space-btn" onclick="addSpace()">Space</button>
+            <button class="backspace-btn" onclick="backspaceOutput()">⌫ Backspace</button>
+            <button class="clear-btn" onclick="clearOutput()">Clear</button>
         </div>
     </div>
 

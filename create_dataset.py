@@ -43,7 +43,7 @@ for dir_ in os.listdir(DATA_DIR):
                 data_aux.append(y - min(y_))
 
             data.append(data_aux)
-            labels.append(dir_)
+            labels.append(int(dir_))
 
 f = open('data.pickle', 'wb')
 pickle.dump({'data': data, 'labels': labels}, f)

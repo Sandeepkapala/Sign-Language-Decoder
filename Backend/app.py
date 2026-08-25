@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 model = None
-labels_dict = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E'}
+labels_dict = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E',5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'V', 13: 'W', 14: 'Y'}
 data_dict = None
 max_len = 0
 
