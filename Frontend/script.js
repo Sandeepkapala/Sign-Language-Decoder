@@ -216,22 +216,19 @@ function loadHands() {
 
 function initHands() {
 
-    const mpHands = window.Hands;
+    const HandsClass = window.Hands;
 
-    if (!mpHands) {
+    if (!HandsClass) {
+        console.error("MediaPipe Hands library not loaded");
         prediction.textContent = "MediaPipe error";
         return;
     }
 
-    hands = new mpHands.Hands({
-
+    hands = new HandsClass({
         locateFile: (file) => {
-
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
         }
-
     });
-
 
     hands.onResults(onHandResults);
 
