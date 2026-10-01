@@ -225,7 +225,7 @@ async function predictSign(landmarks) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 100);
         
-        const response = await fetch('http://localhost:5000/predict_landmarks', {
+        const response = await fetch('https://sign-language-backend.onrender.com/predict_landmarks', {
             method: 'POST',
             signal: controller.signal,
             headers: {'Content-Type': 'application/json'},
@@ -258,7 +258,7 @@ async function predictCurrentFrame() {
         const reader = new FileReader();
         reader.onload = async () => {
             try {
-                const response = await fetch('http://localhost:5000/predict_image', {
+                const response = await fetch('https://sign-language-backend.onrender.com/predict_image', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({image: reader.result})
