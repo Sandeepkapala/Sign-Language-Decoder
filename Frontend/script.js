@@ -1,94 +1,163 @@
-// Text-to-Speech
+// =========================================================
+// API
+// =========================================================
+
+const API_BASE_URL =
+    "https://sign-language-backend.onrender.com";
+
+
+// =========================================================
+// TEXT TO SPEECH
+// =========================================================
 
 let speechEnabled = true;
-let lastSpokenPrediction = '';
+
+let lastSpokenPrediction = "";
+
 let speechCooldown = false;
 
-// Render Backend URL
-const API_BASE_URL = 'https://sign-language-backend.onrender.com';
 
 function speakPrediction(text = null) {
 
-    let textToSpeak = text || prediction.textContent;
+    let textToSpeak =
+        text || prediction.textContent;
 
-    // Remove confidence percentage
-    textToSpeak = textToSpeak.replace(/\s*\([^)]*\)/g, '').trim();
+    // Remove confidence
+    textToSpeak =
+        textToSpeak
+            .replace(/\s*\([^)]*\)/g, "")
+            .trim();
 
-    // Don't speak invalid results
+
+    // Ignore invalid results
     if (
         !textToSpeak ||
-        textToSpeak === '--' ||
-        textToSpeak === '?' ||
-        textToSpeak === 'No hand' ||
-        textToSpeak === 'Camera error'
+        textToSpeak === "--" ||
+        textToSpeak === "?" ||
+        textToSpeak === "No hand" ||
+        textToSpeak === "Camera error" ||
+        textToSpeak === "Show hand"
     ) {
         return;
     }
 
-    // Prevent speaking the same prediction continuously
-    if (textToSpeak === lastSpokenPrediction && speechCooldown) {
+
+    // Prevent continuous speaking
+    if (
+        textToSpeak === lastSpokenPrediction &&
+        speechCooldown
+    ) {
         return;
     }
 
-    lastSpokenPrediction = textToSpeak;
+
+    lastSpokenPrediction =
+        textToSpeak;
+
     speechCooldown = true;
+
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
-    utterance.lang = 'en-US';
+    const utterance =
+        new SpeechSynthesisUtterance(
+            textToSpeak
+        );
+
+
+    utterance.lang = "en-US";
+
     utterance.rate = 0.9;
+
     utterance.pitch = 1;
+
     utterance.volume = 1;
 
-    window.speechSynthesis.speak(utterance);
 
-    // Allow same sign to be spoken again after 2 seconds
+    window.speechSynthesis.speak(
+        utterance
+    );
+
+
     setTimeout(() => {
+
         speechCooldown = false;
+
     }, 2000);
 }
 
 
-// Real MediaPipe Hands detection
+// =========================================================
+// DOM ELEMENTS
+// =========================================================
 
-let video = document.getElementById("video");
-
-let canvas = document.createElement('canvas');
-let ctx = canvas.getContext('2d');
-
-let prediction = document.getElementById("prediction");
-let savedOutput = document.getElementById("savedOutput");
+let video =
+    document.getElementById("video");
 
 
-// Stores the complete detected sentence
+let canvas =
+    document.createElement("canvas");
+
+
+let ctx =
+    canvas.getContext("2d");
+
+
+let prediction =
+    document.getElementById(
+        "prediction"
+    );
+
+
+let savedOutput =
+    document.getElementById(
+        "savedOutput"
+    );
+
+
+// =========================================================
+// SAVED OUTPUT
+// =========================================================
+
 let savedText = "";
 
-// Prevent the same prediction from being added repeatedly
 let lastSavedPrediction = "";
+
 let lastSavedTime = 0;
 
 
 function addToSavedOutput(text) {
 
-    if (!text) return;
+    if (!text) {
+        return;
+    }
 
-    // Remove confidence percentage if present
-    text = text.replace(/\s*\([^)]*\)/g, '').trim();
 
+    // Remove confidence
+    text =
+        text
+            .replace(/\s*\([^)]*\)/g, "")
+            .trim();
+
+
+    // Ignore invalid results
     if (
         text === "?" ||
         text === "--" ||
         text === "Show hand" ||
-        text === "Camera error"
+        text === "Camera error" ||
+        text === "No hand"
     ) {
         return;
     }
 
-    const now = Date.now();
 
-    // Prevent the same sign from being added continuously
+    const now =
+        Date.now();
+
+
+    // Prevent repeated same sign
     if (
         text === lastSavedPrediction &&
         now - lastSavedTime < 1500
@@ -96,163 +165,322 @@ function addToSavedOutput(text) {
         return;
     }
 
-    lastSavedPrediction = text;
-    lastSavedTime = now;
+
+    lastSavedPrediction =
+        text;
+
+    lastSavedTime =
+        now;
+
 
     savedText += text;
 
-    savedOutput.textContent = savedText;
+    savedOutput.textContent =
+        savedText;
 }
 
 
 function addSpace() {
 
-    // Don't add multiple spaces
-    if (savedText.length === 0) return;
+    if (savedText.length === 0) {
+        return;
+    }
+
 
     if (!savedText.endsWith(" ")) {
+
         savedText += " ";
-        savedOutput.textContent = savedText;
+
+        savedOutput.textContent =
+            savedText;
     }
 }
 
 
 function backspaceOutput() {
 
-    if (savedText.length === 0) return;
+    if (savedText.length === 0) {
+        return;
+    }
 
-    savedText = savedText.slice(0, -1);
 
-    savedOutput.textContent = savedText;
+    savedText =
+        savedText.slice(0, -1);
+
+
+    savedOutput.textContent =
+        savedText;
 }
 
 
 function clearOutput() {
 
     savedText = "";
+
     savedOutput.textContent = "";
 
-    // Reset prediction tracking
     lastSavedPrediction = "";
+
     lastSavedTime = 0;
 }
 
 
 function speakSavedOutput() {
 
-    // Get exactly what is currently saved
-    const textToSpeak = savedText.trim();
+    const textToSpeak =
+        savedText.trim();
 
-    // Don't speak if empty
+
     if (!textToSpeak) {
         return;
     }
 
-    // Stop previous speech
+
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
-    utterance.lang = 'en-US';
+    const utterance =
+        new SpeechSynthesisUtterance(
+            textToSpeak
+        );
+
+
+    utterance.lang = "en-US";
+
     utterance.rate = 0.9;
+
     utterance.pitch = 1;
+
     utterance.volume = 1;
 
-    window.speechSynthesis.speak(utterance);
+
+    window.speechSynthesis.speak(
+        utterance
+    );
 }
 
 
-let stream;
+// =========================================================
+// CAMERA VARIABLES
+// =========================================================
+
+let stream = null;
+
 let hands = null;
+
 let cameraRaf = null;
 
+
+// =========================================================
+// START CAMERA
+// =========================================================
 
 async function startCamera() {
 
     try {
 
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: true
-        });
+        stream =
+            await navigator.mediaDevices
+                .getUserMedia({
+                    video: true,
+                    audio: false
+                });
 
-        video.srcObject = stream;
 
-        video.onloadedmetadata = () => {
+        video.srcObject =
+            stream;
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
 
-            video.play();
+        video.onloadedmetadata =
+            () => {
 
-            loadHands();
-        };
+                canvas.width =
+                    video.videoWidth;
+
+                canvas.height =
+                    video.videoHeight;
+
+
+                video.play();
+
+
+                loadHands();
+            };
 
     } catch (error) {
 
-        console.error("Camera error:", error);
+        console.error(
+            "Camera error:",
+            error
+        );
 
-        prediction.textContent = "Camera error";
+        prediction.textContent =
+            "Camera error";
     }
 }
 
+
+// =========================================================
+// LOAD MEDIAPIPE
+// =========================================================
 
 function loadHands() {
 
-    // MediaPipe Hands
-    const script = document.createElement('script');
+    // Already loaded
+    if (window.Hands) {
 
-    script.src =
-        'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js?r=0.1';
+        console.log(
+            "MediaPipe already loaded"
+        );
 
-    script.onload = initHands;
+        initHands();
 
-    script.onerror = () => {
-        prediction.textContent = "MediaPipe error";
-    };
-
-    document.head.appendChild(script);
-}
-
-
-function initHands() {
-
-    const HandsClass = window.Hands;
-
-    if (!HandsClass) {
-        console.error("MediaPipe Hands library not loaded");
-        prediction.textContent = "MediaPipe error";
         return;
     }
 
-    hands = new HandsClass({
-        locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }
-    });
 
-    hands.onResults(onHandResults);
+    const script =
+        document.createElement(
+            "script"
+        );
+
+
+    script.src =
+        "https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js";
+
+
+    script.onload =
+        () => {
+
+            console.log(
+                "MediaPipe Hands script loaded"
+            );
+
+            initHands();
+        };
+
+
+    script.onerror =
+        () => {
+
+            console.error(
+                "Failed to load MediaPipe Hands"
+            );
+
+            prediction.textContent =
+                "MediaPipe error";
+        };
+
+
+    document.head.appendChild(
+        script
+    );
+}
+
+
+// =========================================================
+// INITIALIZE MEDIAPIPE
+// =========================================================
+
+function initHands() {
+
+    const HandsClass =
+        window.Hands;
+
+
+    if (!HandsClass) {
+
+        console.error(
+            "window.Hands is not available"
+        );
+
+        prediction.textContent =
+            "MediaPipe error";
+
+        return;
+    }
+
+
+    console.log(
+        "MediaPipe constructor:",
+        HandsClass
+    );
+
+
+    // IMPORTANT:
+    // window.Hands itself is the constructor
+    hands =
+        new HandsClass({
+
+            locateFile: (file) => {
+
+                return (
+                    "https://cdn.jsdelivr.net/npm/" +
+                    "@mediapipe/hands/" +
+                    file
+                );
+            }
+
+        });
+
 
     hands.setOptions({
 
         maxNumHands: 1,
+
         modelComplexity: 0,
+
         minDetectionConfidence: 0.5,
+
         minTrackingConfidence: 0.5
 
     });
 
 
-    prediction.textContent = "Show hand";
+    hands.onResults(
+        onHandResults
+    );
 
-    cameraRaf = requestAnimationFrame(onFrame);
+
+    console.log(
+        "MediaPipe Hands initialized successfully"
+    );
+
+
+    prediction.textContent =
+        "Show hand";
+
+
+    if (cameraRaf) {
+
+        cancelAnimationFrame(
+            cameraRaf
+        );
+    }
+
+
+    cameraRaf =
+        requestAnimationFrame(
+            onFrame
+        );
 }
 
 
+// =========================================================
+// PROCESS CAMERA FRAME
+// =========================================================
+
 function onFrame() {
 
-    if (!hands || !video.videoWidth) {
+    if (
+        !hands ||
+        !video.videoWidth
+    ) {
 
-        cameraRaf = requestAnimationFrame(onFrame);
+        cameraRaf =
+            requestAnimationFrame(
+                onFrame
+            );
 
         return;
     }
@@ -260,6 +488,7 @@ function onFrame() {
 
     ctx.save();
 
+
     ctx.drawImage(
         video,
         0,
@@ -268,145 +497,215 @@ function onFrame() {
         canvas.height
     );
 
+
     ctx.restore();
 
 
-    const frame = canvas;
+    const frame =
+        canvas;
 
 
     hands.send({
         image: frame
-    }).then(() => {
+    })
+    .then(() => {
 
-        cameraRaf = requestAnimationFrame(onFrame);
+        cameraRaf =
+            requestAnimationFrame(
+                onFrame
+            );
 
-    }).catch((error) => {
+    })
+    .catch((error) => {
 
-        console.error("MediaPipe error:", error);
+        console.error(
+            "MediaPipe frame error:",
+            error
+        );
 
-        cameraRaf = requestAnimationFrame(onFrame);
+        cameraRaf =
+            requestAnimationFrame(
+                onFrame
+            );
     });
 }
 
 
-let lastPrediction = '';
+// =========================================================
+// MEDIAPIPE RESULTS
+// =========================================================
 
-
-function onHandResults(results) {
+function onHandResults(
+    results
+) {
 
     if (
         results.multiHandLandmarks &&
-        results.multiHandLandmarks[0]
+        results.multiHandLandmarks.length > 0
     ) {
 
-        const landmarks = results.multiHandLandmarks[0];
+        const landmarks =
+            results
+                .multiHandLandmarks[0];
 
-        const landmarkData = landmarks.map(lm => ({
 
-            x: lm.x,
-            y: lm.y,
-            z: lm.z
+        const landmarkData =
+            landmarks.map(
+                (lm) => ({
 
-        }));
+                    x: lm.x,
 
-        predictSign(landmarkData);
+                    y: lm.y,
+
+                    z: lm.z
+
+                })
+            );
+
+
+        predictSign(
+            landmarkData
+        );
 
     } else {
 
-        if (lastPrediction !== '--') {
+        if (
+            lastPrediction !== "--"
+        ) {
 
-            prediction.textContent = '--';
+            prediction.textContent =
+                "--";
 
-            lastPrediction = '--';
+            lastPrediction =
+                "--";
         }
     }
 }
 
 
-async function predictSign(landmarks) {
+// =========================================================
+// PREDICT LANDMARKS
+// =========================================================
+
+async function predictSign(
+    landmarks
+) {
 
     try {
 
-        const controller = new AbortController();
-
-        // Render can take a few seconds to respond
-        const timeout = setTimeout(() => {
-            controller.abort();
-        }, 10000);
+        const controller =
+            new AbortController();
 
 
-        const response = await fetch(
-            `${API_BASE_URL}/predict_landmarks`,
-            {
-                method: 'POST',
+        const timeout =
+            setTimeout(() => {
 
-                signal: controller.signal,
+                controller.abort();
 
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+            }, 10000);
 
-                body: JSON.stringify({
-                    landmarks: landmarks
-                })
-            }
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/predict_landmarks`,
+                {
+
+                    method: "POST",
+
+                    signal: controller.signal,
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        landmarks:
+                            landmarks
+                    })
+
+                }
+            );
+
+
+        clearTimeout(
+            timeout
         );
 
 
-        clearTimeout(timeout);
-
-
         if (!response.ok) {
+
             throw new Error(
-                `Server returned ${response.status}`
+                `HTTP ${response.status}`
             );
         }
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
-        let display = data.prediction || '?';
+        let display =
+            data.prediction || "?";
 
 
         if (data.confidence) {
-            display += ` (${data.confidence})`;
+
+            display +=
+                ` (${data.confidence})`;
         }
 
 
-        prediction.textContent = display;
+        prediction.textContent =
+            display;
 
-        lastPrediction = display;
+
+        lastPrediction =
+            display;
 
 
         if (data.prediction) {
 
-            speakPrediction(data.prediction);
+            speakPrediction(
+                data.prediction
+            );
 
-            addToSavedOutput(data.prediction);
+
+            addToSavedOutput(
+                data.prediction
+            );
         }
 
+    } catch (error) {
 
-    } catch (e) {
+        console.error(
+            "Landmark prediction error:",
+            error
+        );
 
-        console.error("Prediction error:", e);
-
-        prediction.textContent = '?';
     }
 }
 
 
+// =========================================================
+// PREDICT CURRENT IMAGE
+// =========================================================
+
 async function predictCurrentFrame() {
 
-    if (!video.videoWidth || !canvas) {
+    if (
+        !video.videoWidth ||
+        !canvas
+    ) {
 
-        prediction.textContent = '? Camera not ready';
+        prediction.textContent =
+            "? Camera not ready";
 
         return;
     }
 
 
-    // Capture current frame
+    // Capture frame
     ctx.drawImage(
         video,
         0,
@@ -416,95 +715,132 @@ async function predictCurrentFrame() {
     );
 
 
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob(
+        async (blob) => {
 
-        if (!blob) {
+            if (!blob) {
 
-            prediction.textContent = '? Image error';
+                prediction.textContent =
+                    "? Image error";
 
-            return;
-        }
-
-
-        const reader = new FileReader();
-
-
-        reader.onload = async () => {
-
-            try {
-
-                const response = await fetch(
-                    `${API_BASE_URL}/predict_image`,
-                    {
-                        method: 'POST',
-
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-
-                        body: JSON.stringify({
-                            image: reader.result
-                        })
-                    }
-                );
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        `Server returned ${response.status}`
-                    );
-                }
-
-
-                const data = await response.json();
-
-
-                let display = data.prediction || '?';
-
-
-                if (data.confidence) {
-
-                    display += ` (${data.confidence})`;
-                }
-
-
-                prediction.textContent = display;
-
-                lastPrediction = display;
-
-
-                if (data.prediction) {
-
-                    speakPrediction(data.prediction);
-
-                    addToSavedOutput(data.prediction);
-                }
-
-
-            } catch (e) {
-
-                console.error(
-                    "Image prediction error:",
-                    e
-                );
-
-                prediction.textContent = '? Error';
+                return;
             }
-        };
 
 
-        reader.readAsDataURL(blob, 'image/jpeg');
+            const reader =
+                new FileReader();
 
-    }, 'image/jpeg', 0.8);
+
+            reader.onload =
+                async () => {
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                `${API_BASE_URL}/predict_image`,
+                                {
+
+                                    method:
+                                        "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify({
+                                            image:
+                                                reader.result
+                                        })
+                                }
+                            );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                `HTTP ${response.status}`
+                            );
+                        }
+
+
+                        const data =
+                            await response.json();
+
+
+                        let display =
+                            data.prediction ||
+                            "?";
+
+
+                        if (
+                            data.confidence
+                        ) {
+
+                            display +=
+                                ` (${data.confidence})`;
+                        }
+
+
+                        prediction.textContent =
+                            display;
+
+
+                        lastPrediction =
+                            display;
+
+
+                        if (
+                            data.prediction
+                        ) {
+
+                            speakPrediction(
+                                data.prediction
+                            );
+
+
+                            addToSavedOutput(
+                                data.prediction
+                            );
+                        }
+
+                    } catch (error) {
+
+                        console.error(
+                            "Image prediction error:",
+                            error
+                        );
+
+                        prediction.textContent =
+                            "? Error";
+                    }
+                };
+
+
+            reader.readAsDataURL(
+                blob
+            );
+
+        },
+        "image/jpeg",
+        0.8
+    );
 }
 
+
+// =========================================================
+// STOP CAMERA
+// =========================================================
 
 function stopCamera() {
 
     if (cameraRaf) {
 
-        cancelAnimationFrame(cameraRaf);
+        cancelAnimationFrame(
+            cameraRaf
+        );
 
         cameraRaf = null;
     }
@@ -512,9 +848,13 @@ function stopCamera() {
 
     if (stream) {
 
-        stream.getTracks().forEach(track => {
-            track.stop();
-        });
+        stream
+            .getTracks()
+            .forEach(
+                (track) => {
+                    track.stop();
+                }
+            );
 
         stream = null;
     }
@@ -522,5 +862,8 @@ function stopCamera() {
 
     video.srcObject = null;
 
-    prediction.textContent = "--";
+    hands = null;
+
+    prediction.textContent =
+        "--";
 }

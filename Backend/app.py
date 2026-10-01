@@ -7,9 +7,18 @@ import mediapipe as mp
 import base64
 import os
 
+
+# =========================================================
+# FLASK APP
+# =========================================================
+
 app = Flask(__name__)
 
-# Allow requests from your Vercel frontend
+
+# =========================================================
+# CORS
+# =========================================================
+
 CORS(
     app,
     resources={
@@ -23,9 +32,15 @@ CORS(
     }
 )
 
+
+# =========================================================
+# MODEL / DATA
+# =========================================================
+
 model = None
 data_dict = None
 max_len = 0
+
 
 labels_dict = {
     0: 'A',
@@ -45,7 +60,11 @@ labels_dict = {
     14: 'Y'
 }
 
-# MediaPipe Hands
+
+# =========================================================
+# MEDIAPIPE
+# =========================================================
+
 mp_hands = mp.solutions.hands
 
 hands_model = mp_hands.Hands(
@@ -54,25 +73,46 @@ hands_model = mp_hands.Hands(
 )
 
 
+# =========================================================
+# LOAD MODEL
+# =========================================================
+
 def load_resources():
-    global model, data_dict, max_len
+
+    global model
+    global data_dict
+    global max_len
 
     base_dir = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..')
+        os.path.join(
+            os.path.dirname(__file__),
+            '..'
+        )
     )
 
-    model_path = os.path.join(base_dir, 'model.p')
-    data_path = os.path.join(base_dir, 'data.pickle')
+    model_path = os.path.join(
+        base_dir,
+        'model.p'
+    )
 
-    print("Loading model:", model_path)
-    print("Loading dataset:", data_path)
+    data_path = os.path.join(
+        base_dir,
+        'data.pickle'
+    )
 
+    print("Model path:", model_path)
+    print("Data path:", data_path)
+
+    # Load model
     with open(model_path, 'rb') as f:
+
         model_dict = pickle.load(f)
 
     model = model_dict['model']
 
+    # Load dataset
     with open(data_path, 'rb') as f:
+
         data_dict = pickle.load(f)
 
     data = np.array(
@@ -80,24 +120,30 @@ def load_resources():
         dtype=object
     )
 
-    max_len = max(len(i) for i in data)
+    max_len = max(
+        len(i)
+        for i in data
+    )
 
-    print(f"Model loaded successfully.")
-    print(f"Maximum feature length: {max_len}")
+    print(
+        f"Model loaded successfully. "
+        f"Max len: {max_len}"
+    )
 
 
-# Load model when server starts
+# Load resources
 load_resources()
 
 print("Backend ready - No login required")
 
 
-# --------------------------------------------------
-# HOME / HEALTH CHECK
-# --------------------------------------------------
+# =========================================================
+# HEALTH CHECK
+# =========================================================
 
 @app.route('/', methods=['GET'])
 def health():
+
     return jsonify({
         "status": "success",
         "message": "Sign Language API is running",
@@ -109,14 +155,17 @@ def health():
     })
 
 
-# --------------------------------------------------
-# PREDICT FROM IMAGE
-# --------------------------------------------------
+# =========================================================
+# PREDICT IMAGE
+# =========================================================
 
-@app.route('/predict_image', methods=['POST', 'OPTIONS'])
+@app.route(
+    '/predict_image',
+    methods=['POST', 'OPTIONS']
+)
 def predict_image():
 
-    # Handle browser CORS preflight
+    # Browser CORS preflight
     if request.method == 'OPTIONS':
         return '', 204
 
@@ -125,22 +174,31 @@ def predict_image():
         data = request.get_json()
 
         if not data:
+
             return jsonify({
                 "error": "No JSON data received"
             }), 400
 
         if 'image' not in data:
+
             return jsonify({
                 "error": "Image data missing"
             }), 400
 
         img_b64 = data['image']
 
-        # Remove data:image/...;base64, prefix
+        # Remove base64 header
         if ',' in img_b64:
-            img_b64 = img_b64.split(',', 1)[1]
 
-        img_bytes = base64.b64decode(img_b64)
+            img_b64 = img_b64.split(
+                ',',
+                1
+            )[1]
+
+        # Decode image
+        img_bytes = base64.b64decode(
+            img_b64
+        )
 
         nparr = np.frombuffer(
             img_bytes,
@@ -153,18 +211,23 @@ def predict_image():
         )
 
         if img is None:
+
             return jsonify({
                 "error": "Could not decode image"
             }), 400
 
+        # BGR -> RGB
         img_rgb = cv2.cvtColor(
             img,
             cv2.COLOR_BGR2RGB
         )
 
-        # Detect hand
-        results = hands_model.process(img_rgb)
+        # MediaPipe
+        results = hands_model.process(
+            img_rgb
+        )
 
+        # No hand
         if not results.multi_hand_landmarks:
 
             return jsonify({
@@ -172,24 +235,34 @@ def predict_image():
                 "confidence": "0.0%"
             })
 
-        # Use first detected hand
-        hand_landmarks = results.multi_hand_landmarks[0]
+        # First hand
+        hand_landmarks = (
+            results.multi_hand_landmarks[0]
+        )
 
         x_ = []
         y_ = []
 
+        # Extract coordinates
         for landmark in hand_landmarks.landmark:
 
-            x_.append(landmark.x)
-            y_.append(landmark.y)
+            x_.append(
+                landmark.x
+            )
 
-        # Create normalized features
-        data_aux = []
+            y_.append(
+                landmark.y
+            )
 
+        # Normalize coordinates
         min_x = min(x_)
         min_y = min(y_)
 
-        for i in range(len(hand_landmarks.landmark)):
+        data_aux = []
+
+        for i in range(
+            len(hand_landmarks.landmark)
+        ):
 
             data_aux.append(
                 x_[i] - min_x
@@ -199,7 +272,7 @@ def predict_image():
                 y_[i] - min_y
             )
 
-        # Match model feature size
+        # Match model feature length
         if len(data_aux) < max_len:
 
             data_aux += [0] * (
@@ -210,9 +283,12 @@ def predict_image():
 
             data_aux = data_aux[:max_len]
 
-        data_input = np.array(data_aux)
+        # Prediction input
+        data_input = np.array(
+            data_aux
+        )
 
-        # Prediction
+        # Predict
         proba = model.predict_proba(
             [data_input]
         )[0]
@@ -226,7 +302,9 @@ def predict_image():
             "Unknown"
         )
 
-        confidence = f"{max(proba) * 100:.1f}%"
+        confidence = (
+            f"{max(proba) * 100:.1f}%"
+        )
 
         return jsonify({
             "prediction": pred_char,
@@ -235,16 +313,19 @@ def predict_image():
 
     except Exception as e:
 
-        print("predict_image error:", str(e))
+        print(
+            "predict_image error:",
+            str(e)
+        )
 
         return jsonify({
             "error": str(e)
         }), 400
 
 
-# --------------------------------------------------
-# PREDICT FROM LANDMARKS
-# --------------------------------------------------
+# =========================================================
+# PREDICT LANDMARKS
+# =========================================================
 
 @app.route(
     '/predict_landmarks',
@@ -252,7 +333,7 @@ def predict_image():
 )
 def predict_landmarks():
 
-    # Handle CORS preflight
+    # Browser CORS preflight
     if request.method == 'OPTIONS':
         return '', 204
 
@@ -261,11 +342,13 @@ def predict_landmarks():
         data = request.get_json()
 
         if not data:
+
             return jsonify({
                 "error": "No JSON data received"
             }), 400
 
         if 'landmarks' not in data:
+
             return jsonify({
                 "error": "Landmarks missing"
             }), 400
@@ -273,11 +356,13 @@ def predict_landmarks():
         landmarks = data['landmarks']
 
         if not landmarks:
+
             return jsonify({
                 "prediction": "No hand",
                 "confidence": "0.0%"
             })
 
+        # Coordinates
         x_ = [
             lm['x']
             for lm in landmarks
@@ -291,9 +376,12 @@ def predict_landmarks():
         min_x = min(x_)
         min_y = min(y_)
 
+        # Create features
         data_aux = []
 
-        for i in range(len(landmarks)):
+        for i in range(
+            len(landmarks)
+        ):
 
             data_aux.append(
                 x_[i] - min_x
@@ -303,7 +391,7 @@ def predict_landmarks():
                 y_[i] - min_y
             )
 
-        # Match model feature size
+        # Match model feature length
         if len(data_aux) < max_len:
 
             data_aux += [0] * (
@@ -314,11 +402,12 @@ def predict_landmarks():
 
             data_aux = data_aux[:max_len]
 
+        # Prediction input
         data_input = np.asarray(
             data_aux
         )
 
-        # Prediction
+        # Predict
         proba = model.predict_proba(
             [data_input]
         )[0]
@@ -332,7 +421,9 @@ def predict_landmarks():
             "Unknown"
         )
 
-        confidence = f"{max(proba) * 100:.1f}%"
+        confidence = (
+            f"{max(proba) * 100:.1f}%"
+        )
 
         return jsonify({
             "prediction": pred_char,
@@ -351,9 +442,9 @@ def predict_landmarks():
         }), 400
 
 
-# --------------------------------------------------
-# RUN SERVER
-# --------------------------------------------------
+# =========================================================
+# RUN LOCAL
+# =========================================================
 
 if __name__ == '__main__':
 

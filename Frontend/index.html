@@ -1,57 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Language Decoder</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Sign Language Decoder</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
 </head>
 
+
 <body>
+
 <div class="container">
+
+
+    <!-- =========================================
+         LEFT PANEL
+    ========================================== -->
+
     <div class="left-panel">
-        <div class="app-title">Sign Language Decoder</div>
-        <div class="description">
-            Real-time sign language recognition using AI-powered gesture detection.
-            Click Start to activate your camera and begin decoding.
+
+        <div class="app-title">
+            Sign Language Decoder
         </div>
+
+
+        <div class="description">
+
+            Real-time sign language recognition
+            using AI-powered gesture detection.
+
+            Click Start to activate your camera
+            and begin decoding.
+
+        </div>
+
+
+        <!-- CAMERA -->
 
         <div class="camera-box">
-            <video id="video" autoplay muted></video>
+
+            <video
+                id="video"
+                autoplay
+                muted
+                playsinline
+            ></video>
+
         </div>
+
+
+        <!-- BUTTONS -->
 
         <div class="buttons">
-            <button class="start-btn" onclick="startCamera()">Start</button>
-            <button class="stop-btn" onclick="stopCamera()">Stop</button>
-            <button class="predict-btn" onclick="predictCurrentFrame()">Predict</button>
-             <button class="speak-btn" onclick="speakPrediction()">🔊 Speak</button>
+
+            <button
+                class="start-btn"
+                onclick="startCamera()"
+            >
+                Start
+            </button>
+
+
+            <button
+                class="stop-btn"
+                onclick="stopCamera()"
+            >
+                Stop
+            </button>
+
+
+            <button
+                class="predict-btn"
+                onclick="predictCurrentFrame()"
+            >
+                Predict
+            </button>
+
+
+            <button
+                class="speak-btn"
+                onclick="speakPrediction()"
+            >
+                🔊 Speak
+            </button>
+
         </div>
+
     </div>
 
+
+    <!-- =========================================
+         RIGHT PANEL
+    ========================================== -->
+
     <div class="right-panel">
+
+
+        <!-- DETECTED GESTURE -->
+
         <div class="prediction-card">
-            <div class="prediction-label">Detected Gesture</div>
-            <div class="prediction-text" id="prediction">--</div>
+
+            <div class="prediction-label">
+                Detected Gesture
+            </div>
+
+
+            <div
+                class="prediction-text"
+                id="prediction"
+            >
+                --
+            </div>
+
         </div>
-          <!-- Saved Output -->
-    <div class="prediction-card saved-card">
-        <div class="prediction-label">Saved Output</div>
-        <div class="prediction-text saved-text" id="savedOutput"></div>
-         <!-- Speak Saved Output -->
-    <button class="saved-speak-btn" onclick="speakSavedOutput()">
-        🔊
-    </button>
-        <div class="saved-controls">
-            <button class="space-btn" onclick="addSpace()">Space</button>
-            <button class="backspace-btn" onclick="backspaceOutput()">⌫ Backspace</button>
-            <button class="clear-btn" onclick="clearOutput()">Clear</button>
+
+
+        <!-- SAVED OUTPUT -->
+
+        <div class="prediction-card saved-card">
+
+            <div class="prediction-label">
+                Saved Output
+            </div>
+
+
+            <div
+                class="prediction-text saved-text"
+                id="savedOutput"
+            ></div>
+
+
+            <!-- SPEAK SAVED OUTPUT -->
+
+            <button
+                class="saved-speak-btn"
+                onclick="speakSavedOutput()"
+            >
+                🔊
+            </button>
+
+
+            <!-- CONTROLS -->
+
+            <div class="saved-controls">
+
+                <button
+                    class="space-btn"
+                    onclick="addSpace()"
+                >
+                    Space
+                </button>
+
+
+                <button
+                    class="backspace-btn"
+                    onclick="backspaceOutput()"
+                >
+                    ⌫ Backspace
+                </button>
+
+
+                <button
+                    class="clear-btn"
+                    onclick="clearOutput()"
+                >
+                    Clear
+                </button>
+
+            </div>
+
         </div>
+
     </div>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+
+<!-- YOUR JAVASCRIPT -->
+
 <script src="script.js"></script>
+
 </body>
+
 </html>
